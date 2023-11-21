@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script language="javascript">
+    
+        // 加載產品列表的函數
+        function loadList() {
+            // 定義從伺服器獲取產品列表數據的 URL
+            URL = 'controller.py?act=browse';
+            
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(URL, {
+                method: 'POST',
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                // 處理接收到的數據，並動態更新 HTML
+                let div = document.getElementById('main');
+                let result = "<table border=2>";
+
+                // 每一行數據
+                for (let row of data) {
+                    result += "<tr>";
+
+                    // 每個屬性，生成 HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>ProductID: " + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>Item: " + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>Describe: " + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>Unit Price: " + row[index] + "</td>";
+                        }
+                    }
+
+                    // 添加加入購物車按鈕，並指定對應的產品ID
+                    result += "<td><button onclick='plus_prd(" + row[0] + ")'>Add to cart</button></td>";
+                    result += "</tr>";
+                }
+
+                result += "</table>";
+                div.innerHTML = result;
+
+                // 清空購物車的顯示區域
+                let div2 = document.getElementById('main2');
+                div2.innerHTML = '';
+            });
+        }
+
+        // 將指定ID的產品添加到購物車的函數
+        function plus_prd(id) {  
+            let url = "controller.py?act=plus&id=" + id;
+            
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(url, {
+                method: 'POST',
+            })
+            .then(function(res) { 
+                return res.text();
+            })
+            .then(function(data){
+                // 在控制台顯示數據
+                console.log(data);
+            });
+        }
+
+        // 加載購物車的函數
+        function loadCart() {
+            let URL = 'controller.py?act=cart';
+    
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(URL, {
+                method: 'POST',
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                // 處理接收到的數據，並動態更新 HTML
+                let div = document.getElementById('main');
+                let result = "<table border=2>";
+
+                // 每一行數據
+                for (let row of data) {
+                    result += "<tr>";
+
+                    // 每個屬性，生成 HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>ProductID: " + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>Item: " + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>Unit Price: " + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>Quantity: " + row[index] + "</td>";
+                        }
+                    }
+
+                    // 添加刪除產品按鈕，並指定對應的產品ID
+                    result += "<td><button onclick='aubtract_prd(" + row[0] + ")'>Delete from cart</button></td>";
+                    result += "</tr>";
+                }
+
+                result += "</table>";    
+                result += "<br><br><br><hr><hr><hr><div id='settlement'><button onclick='settlement()'>Close your account</button></div>";
+                div.innerHTML = result;
+
+                // 清空購物車的顯示區域
+                let div2 = document.getElementById('main2');
+                div2.innerHTML = '';
+            });
+        }
+
+        // 刪除購物車中指定ID的產品的函數
+        function aubtract_prd(id) {
+            let url = "controller.py?act=subtract&id=" + id;
+            console.log(url);
+            
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(url, {
+                method: 'POST'
+            })
+            .then(function(res) {
+                return res.text();
+            })     
+            .then(function(data){ 
+                // 加載購物車
+                loadCart();
+            });
+        }
+
+        // 結算購物車的函數
+        function settlement() {
+            let url = "controller.py?act=settlement";
+            console.log(url);
+
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(url, {
+                method: 'POST'
+            })
+            .then(function(res) { 
+                return res.json(); 
+            })
+            .then(function(data) {
+                // 顯示結算信息
+                let result = "<tr>Summarize => ";
+                result += "Number of Products: " + data[0] + ", ";
+                result += "Total product price: " + data[1] + ".";
+                result += "</tr>";
+
+                let div2 = document.getElementById('main2');
+                div2.innerHTML = result;
+            })
+            .catch(function(error) {
+                console.log('Error: ' + error);
+            });
+        }
+    </script>
+
+    <style>
+        #settlement{
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- 按鈕觸發相應的功能 -->
+    <button onClick="loadList()">Browse products</button>
+    <button onClick="loadCart()">Shopping-Cart</button>
+    <hr/>
+    <!-- 顯示內容的容器 -->
+    <div id="main"><h1>Customer Interface~!~!</h1></div>
+    <div id="main2"><h2></h2></div>
+</body>
+</html>
