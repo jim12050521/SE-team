@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+   
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script language="javascript">
+        // 加載產品列表的函數
+        function loadList() {
+            // 定義從伺服器獲取產品列表數據的 URL
+            let URL = 'Controller.py?act=list';
+            
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(URL, {
+                method: 'POST',
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                // 處理接收到的數據，並動態更新 HTML
+                let div = document.getElementById('main');
+                let result = "<table border=2>";
+
+                // 跑每一行數據
+                for (let row of data) {
+                    result += "<tr>"
+                    // 添加“編輯”按鈕，並指定對應的ID
+                    result += "<td><button onclick='edi(" + row[0] + ")'>編輯</button></td>";
+
+                    // 每個屬性，生成HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>ID：" + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>名稱：" + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>描述：" + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>價格：" + row[index] + "</td>";
+                        }
+                    }
+
+                    // 添加“刪除”按鈕，並指定對應的ID
+                    result += "<td><button onclick='del(" + row['0'] + ")'>刪除</button></td>";
+                    result += "</tr>"
+                }
+                result += "</table>";
+                
+                // 更新'id'為'main'的div的內容
+                div.innerHTML = result;
+            });
+        }
+
+        // 加載指定URL的內容並更新'id'為'main'的div的內容
+        function loadURL(URL) {
+            // 使用POST方法從伺服器獲取數據
+            fetch(URL, {
+                method: 'POST',
+            })
+            .then(function(res) {
+                return res.text();
+            })
+            .then(function(data) {
+                // 更新'id'為'main'的div的內容
+                let div = document.getElementById('main');
+                div.innerHTML = data;
+            })
+        }
+
+        // 提交帶有指定操作的表單的函數
+        function postForm(act) {
+            // 通過ID獲取表單元素
+            let form = document.getElementById('myForm');
+            // 從表單創建FormData對象
+            let mydat = new FormData(form);
+            // 定義帶有指定操作的表單提交的URL
+            let url = "Controller.py?act=" + act;
+
+            // 使用POST方法從伺服器獲取數據
+            fetch(url, {
+                method: 'POST',
+                body: mydat 
+            })
+            .then(function(res) {
+                return res.text();
+            })
+            .then(function(data) {
+                // 表單提交後，重新加載產品列表
+                loadList();
+            })
+        }
+
+        // 刪除指定ID的產品的函數
+        function del(id) {
+            // 定義刪除指定ID的產品的URL
+            let url = "Controller.py?act=delete&id=" + id;
+            console.log(url);
+            
+            // 使用POST方法從伺服器獲取數據
+            fetch(url, {
+                method: 'POST'
+            })
+            .then(function(res) {
+                return res.text();
+            })
+            .then(function(data) {
+                // 刪除後，重新加載產品列表
+                loadList();
+            })
+        }
+
+        // 編輯指定ID的產品的函數
+        function edi(id) {
+            // 定義編輯指定ID的產品的URL
+            let url = "edit_form.py?id=" + id;
+            // 加載指定的URL，並更新'id'為'main'的div的內容
+            loadURL(url);
+        }
+    </script>
+</head>
+<body>
+
+    <button onClick="loadList()">加載列表</button>
+    <button onClick="loadURL('input_form.html')">加載添加表單</button>
+    <hr/>
+
+    <div id="main"><h1>賣家界面~!~!</h1></div>
+</body>
+</html>
